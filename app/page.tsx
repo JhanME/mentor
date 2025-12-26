@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Dice1, Eye, EyeOff } from 'lucide-react';
+import Image from "next/image";
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +19,15 @@ export default function LoginPage() {
         
         {/* --- LADO IZQUIERDO (BRANDING) --- */}
         {/* Texto flotando directamente sobre el fondo oscuro */}
-        <div className="hidden w-1/2 flex-col lg:flex"> 
+        <div className="hidden w-1/2 justify-center flex-col lg:flex"> 
+          <Image
+            src="/LOGO.png"
+            alt="log mentor"
+            width={900}
+            height={900}
+            className='object-contain'
+            priority
+            />
         </div>
 
         {/* --- LADO DERECHO (LA TARJETA/BOX) --- */}
@@ -85,14 +95,27 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-200"></div>
             </div>
           </div>
+          
+          <div className='flex flex-col items-center  justify-cenyter gap-3  my-8 w-full'>
+            <Link 
+              href="/recuperar" 
+              className="text-sm text-gray-400 transition-all duration-300 my-1 hover:text-gray-500 hover:scale-110"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
 
-          <div className="relative  my-2 text-center">
-            <span className="relative font-sans bg-white px-4 text-sm text-gray-400">¿Olvidaste tu contraseña?</span>
-          </div>
+            <Link 
+              href="/registro" 
+              className="text-sm font-bold text-blue-500 transition-all duration-300 hover:text-blue-600 hover:scale-110"
+            >
+              Crea tu cuenta gratis
+            </Link>
 
-          <div className='relative text-center'>
-            <span className='relative font-sans bg-white px-4 text-sm text-blue-600 '>Crea tu cuenta gratis</span>
+            <div className='relative my-8 text-center px-4 text-sm justify-center'>
+              <span className='font-sans text-gray-400 '>Todos los derechos reservardos </span>
+            </div>
           </div>
+          
 
 
 
@@ -100,4 +123,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-  }
+}
