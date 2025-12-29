@@ -1,12 +1,39 @@
 'use client';
 
 import { useState } from 'react';
-import { Dice1, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import Image from "next/image";
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError('Credenciales inválidas');
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    signIn(provider, { callbackUrl: '/dashboard' });
+  };
 
   return (
     // 1. FONDO GLOBAL OSCURO: Ocupa toda la pantalla
@@ -39,26 +66,33 @@ export default function LoginPage() {
             
           </div>
 
-          <form className="flex flex-col gap-5">
-            
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
             {/* Input Email */}
             <div>
-              <input 
-                type="Email o username" 
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Dirección de correo electrónico"
-                className="w-full rounded-xl  font-sans  bg-gray-100 px-4 py-3 text-gray-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                className="w-full rounded-xl font-sans bg-gray-100 px-4 py-3 text-gray-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                required
               />
             </div>
 
             {/* Input Password */}
             <div>
               <div className="relative">
-                <input 
-                  type={showPassword ? "text" : "password"} 
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Contraseña"
-                  className="w-full rounded-xl  font-sans bg-gray-100 px-4 py-3 text-gray-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl font-sans bg-gray-100 px-4 py-3 text-gray-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+                  required
                 />
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
@@ -68,7 +102,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button className="mt-2 w-full rounded-xl bg-blue-500 py-3.5 font-bold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-700 hover:shadow-blue-500/50 hover:-translate-y-0.5 font-sans">
+            <button type="submit" className="mt-2 w-full rounded-xl bg-blue-500 py-3.5 font-bold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-700 hover:shadow-blue-500/50 hover:-translate-y-0.5 font-sans">
               Iniciar Sesión
             </button>
 
@@ -81,14 +115,21 @@ export default function LoginPage() {
           </div>
 
           <div className="flex gap-4">
-            <button className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gray-100 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:border-gray-300 font-sans">
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('google')}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gray-100 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:border-gray-300 font-sans"
+            >
               Google
             </button>
-            <button className="flex flex-1 items-center justify-center gap-2 rounded-xl  bg-gray-100 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:border-gray-300 font-sans">
-               GitHub
-              
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('github')}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gray-100 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:border-gray-300 font-sans"
+            >
+              GitHub
             </button>
-          </div>       
+          </div>
           
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">

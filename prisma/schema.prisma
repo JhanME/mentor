@@ -1,0 +1,138 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role
+  mentorId      String?
+  mentor        User?     @relation("MentorBecario", fields: [mentorId], references: [id])
+  becarios      User[]    @relation("MentorBecario")
+  createdAt     DateTime  @default(now())
+  mentorCodes   MentorCode[]
+  accounts      Account[]
+  sessions      Session[]
+  mentorMentorships Mentorship[] @relation("MentorMentorships")
+  becarioMentorships Mentorship[] @relation("BecarioMentorships")
+}
+
+model MentorCode {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  mentorId  String
+  mentor    User     @relation(fields: [mentorId], references: [id])
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  mentor
+  becario
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Mentorship {
+  id        String   @id @default(uuid())
+  mentorId  String
+  becarioId String
+  period    String   // ej. "2024-2025"
+  createdAt DateTime @default(now())
+  mentor    User     @relation("MentorMentorships", fields: [mentorId], references: [id])
+  becario   User     @relation("BecarioMentorships", fields: [becarioId], references: [id])
+  sessions  MentorshipSession[]
+  tasks     Task[]
+
+  @@unique([mentorId, becarioId, period])
+}
+
+model MentorshipSession {
+  id          String   @id @default(uuid())
+  mentorshipId String
+  date        DateTime
+  topics      String   // JSON string con temas
+  status      SessionStatus @default(scheduled)
+  report      Report?
+  evidence    Evidence[]
+  createdAt   DateTime @default(now())
+  mentorship  Mentorship @relation(fields: [mentorshipId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id           String     @id @default(uuid())
+  mentorshipId String
+  description  String
+  dueDate      DateTime?
+  status       TaskStatus @default(pending)
+  createdAt    DateTime   @default(now())
+  mentorship   Mentorship @relation(fields: [mentorshipId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id        String   @id @default(uuid())
+  sessionId String   @unique
+  content   String
+  generatedAt DateTime @default(now())
+  session   MentorshipSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Evidence {
+  id        String   @id @default(uuid())
+  sessionId String
+  url       String
+  uploadedAt DateTime @default(now())
+  session   MentorshipSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+enum SessionStatus {
+  scheduled
+  completed
+  cancelled
+}
+
+enum TaskStatus {
+  pending
+  completed
+}
